@@ -7,6 +7,7 @@ Python版本：3.12
 """
 
 # -*- coding: utf-8 -*-
+import logging
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -56,7 +57,7 @@ CONFIG = {
 }
 
 # 全局字体设置
-plt.rcParams["font.family"] = ["Times New Roman", "SimSun"]
+plt.rcParams["font.family"] = ["Times New Roman", "Simsun"]
 plt.rcParams["font.size"] = 12
 plt.rcParams["axes.titlesize"] = 14
 plt.rcParams["axes.unicode_minus"] = False
@@ -75,6 +76,41 @@ def load_data(cfg: dict) -> pd.DataFrame:
     )
     print(df.head(10))
     return df[mask].sort_values(cfg["col_year"])
+
+
+'''
+
+
+def load_data(cfg: dict) -> pd.DataFrame:
+    """
+    读取并清洗Excel数据。
+    
+    流程：读取指定工作表 -> 提取目标列 -> 剔除关键列的空值 -> 
+          年份转整型 -> 根据起止年份过滤 -> 按年份排序返回。
+    """
+    try:
+        # 使用链式调用简化初期清洗逻辑，减少零碎的赋值
+        df = (
+            pd.read_excel(cfg["file"], sheet_name=cfg["sheet"])
+            .loc[:, [cfg["col_year"], cfg["col_stock"], cfg["col_flow"]]]
+            .dropna(subset=[cfg["col_year"], cfg["col_stock"]])
+        )
+    except FileNotFoundError:
+        raise FileNotFoundError(f"数据加载失败，找不到文件: {cfg['file']}")
+    except KeyError as e:
+        raise KeyError(f"配置文件中的列名在Excel中不存在: {e}")
+
+    # 类型转换与筛选
+    df[cfg["col_year"]] = df[cfg["col_year"]].astype(int)
+    mask = (df[cfg["col_year"]] >= cfg["year_start"]) & (
+        df[cfg["col_year"]] <= cfg["year_end"]
+    )
+    
+    # 替代 print，使用 logging 或在调用该函数的外部去查看前10行
+    logging.debug(f"数据加载完成，数据预览:\n{df.head()}")
+    
+    return df[mask].sort_values(cfg["col_year"])
+'''
 
 
 # 2. 绘图函数
@@ -276,4 +312,4 @@ def make_anim(df, cfg: dict):
 df = load_data(CONFIG)
 if __name__ == "__main__":
     make_plot(df, CONFIG)
-    make_anim(df, CONFIG)
+    # make_anim(df, CONFIG)
