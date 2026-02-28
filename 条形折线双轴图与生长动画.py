@@ -7,7 +7,7 @@ Python版本：3.12
 """
 
 # -*- coding: utf-8 -*-
-import logging
+
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
